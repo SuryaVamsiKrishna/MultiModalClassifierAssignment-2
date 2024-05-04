@@ -87,6 +87,8 @@ def createTorchCNNmodel(name, numclasses, img_shape, pretrained=True):
         return create_resnetmodel1(numclasses, img_shape)
     elif name=='customresnet':
         return setupCustomResNet(numclasses, 'resnet50')
+    elif name=='vit_b_32':
+        return create_vit_b_32(numclasses)
     elif name in model_names:
         #return models.__dict__[name](pretrained=pretrained)
         #return create_torchvisionmodel(name, numclasses, pretrained)
@@ -212,6 +214,46 @@ def get_vgg_layers(config, batch_norm):
             in_channels = c
             
     return nn.Sequential(*layers)
+
+import torch
+import torch.nn as nn
+
+class ViT_B_32(nn.Module):
+    def __init__(self, output_dim, image_size=224, patch_size=32, num_classes=1000, num_layers=12, hidden_dim=768, num_heads=12, dropout=0.1):
+        super().__init__()
+
+        num_patches = (image_size // patch_size) ** 2
+        self.patch_embedding = nn.Conv2d(3, hidden_dim, kernel_size=patch_size, stride=patch_size)
+        self.positional_embedding = nn.Parameter(torch.randn(1, num_patches + 1, hidden_dim))
+        self.dropout = nn.Dropout(dropout)
+
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=num_heads),
+            num_layers=num_layers
+        )
+
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        B = x.shape[0]
+        x = self.patch_embedding(x)
+        x = x.permute(0, 2, 3, 1)
+        x = x.flatten(1, 2)
+        x = torch.cat([x, self.positional_embedding.repeat(B, 1, 1)], dim=1)
+        x = self.dropout(x)
+        x = self.transformer(x)
+        x = x[:, 0, :]  # Take the [CLS] token
+        x = self.fc(x)
+        return x
+
+def create_vit_b_32(output_dim, image_size=224):
+    model = ViT_B_32(output_dim=output_dim, image_size=image_size)
+    print(model)
+
+    num_train_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'The model has {num_train_parameters} trainable parameters')
+    return model
+
 
 class CNNNet1(nn.Module): #32*32 image input
     def __init__(self, numclasses):
