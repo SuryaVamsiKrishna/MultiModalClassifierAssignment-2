@@ -381,57 +381,50 @@ def create_lenet(numclasses, img_shape):
     print(f'The model has {num_trainparameters} trainable parameters')
     return model
 
-
 class AlexNet(nn.Module):
     def __init__(self, output_dim):
         super().__init__()
         
         self.features = nn.Sequential(
-            nn.Conv2d(3, 64, 3, 2, 1), #in_channels, out_channels, kernel_size, stride, padding
-            nn.MaxPool2d(2), #kernel_size
-            nn.ReLU(inplace = True),
-            nn.Conv2d(64, 192, 3, padding = 1),
-            nn.MaxPool2d(2),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(192, 384, 3, padding = 1),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(384, 256, 3, padding = 1),
-            nn.ReLU(inplace = True),
-            nn.Conv2d(256, 256, 3, padding = 1),
-            nn.MaxPool2d(2),
-            nn.ReLU(inplace = True)
+            nn.Conv2d(3, 64, 11, 4, 2), #in_channels, out_channels, kernel_size, stride, padding
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2), #kernel_size, stride
+            nn.Conv2d(64, 192, 5, padding=2),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2),
+            nn.Conv2d(192, 384, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(384, 256, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(3, 2),
         )
         
         self.classifier = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(256 * 2 * 2, 4096),
-            nn.ReLU(inplace = True),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(inplace=True),
             nn.Dropout(0.5),
             nn.Linear(4096, 4096),
-            nn.ReLU(inplace = True),
+            nn.ReLU(inplace=True),
             nn.Linear(4096, output_dim),
         )
 
     def forward(self, x):
         x = self.features(x)
-        h = x.view(x.shape[0], -1)
-        x = self.classifier(h)
-        return x, h
+        x = x.view(x.size(0), 256 * 6 * 6)  # Adjusted based on the final size of the feature maps
+        x = self.classifier(x)
+        return x
 
-def create_AlexNet(numclasses, img_shape):
-    #for MNIST dataset
-    #INPUT_DIM = img_shape[1]*img_shape[2]#28 * 28
+def create_AlexNet(numclasses):
     OUTPUT_DIM = numclasses
     model = AlexNet(OUTPUT_DIM)
     print(model)
 
-    for p in model.parameters():
-        if p.requires_grad:
-            print("trainable parameters:", p.numel()) #PyTorch torch.numel() method returns the total number of elements in the input tensor.
-    num_trainparameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f'The model has {num_trainparameters} trainable parameters')
+    num_train_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'The model has {num_train_parameters} trainable parameters')
     return model
-
 
 def create_resnetmodel1(numclasses, img_shape):
     #model_ft = models.resnet18(pretrained=True) #Downloading: "https://download.pytorch.org/models/resnet18-5c106cde.pth" to /home/lkk/.cache/torch/hub/checkpoints/resnet18-5c106cde.pth
