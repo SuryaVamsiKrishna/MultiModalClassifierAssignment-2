@@ -2,7 +2,9 @@
 I have made changes to 3 models: ResNet, AlexNet, VIT_B_32.
 
 I have made changes in https://github.com/SuryaVamsiKrishna/MultiModalClassifierAssignment-2/blob/main/TorchClassifier/myTorchModels/CustomResNet.py for ResNet.
+
 For AlexNet I have made changes in https://github.com/SuryaVamsiKrishna/MultiModalClassifierAssignment-2/blob/main/TorchClassifier/myTorchModels/TorchCNNmodels.py
+
 And for VIT_B_32 since it is buildin model I have added the implementation in https://github.com/SuryaVamsiKrishna/MultiModalClassifierAssignment-2/blob/main/TorchClassifier/myTorchModels/TorchCNNmodels.py as well.
 
 # MultiModalClassifier
