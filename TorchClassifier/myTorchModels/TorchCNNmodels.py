@@ -246,7 +246,8 @@ class ViT_B_32(nn.Module):
         x = self.fc(x)
         return x
 
-def create_vit_b_32(output_dim, image_size=224):
+def create_vit_b_32(output_dim):
+    image_size=224
     model = ViT_B_32(output_dim=output_dim, image_size=image_size)
     print(model)
 
